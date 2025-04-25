@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - StatusCope</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+body {
+      font-family: 'Poppins', sans-serif;
+      background: url('background.png') no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  position: fixed;
+  left: -250px; /* hidden initially */
+  top: 0;
+  background: #008cba;
+  padding-top: 20px;
+  color: white;
+  transition: left 0.3s ease-in-out;
+  z-index: 1000;
+  overflow-y: auto; /* ✅ Add this */
+}
+
+.sidebar h1 {
+  font-size: 30px;     /* Adjust size to be smaller */
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+  margin-top: 0;
+  color: white;
+}
+
+
+    .sidebar a {
+      display: block;
+      color: white;
+      padding: 10px;
+      text-decoration: none;
+      text-align: center;
+      margin-top: 15px;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    .sidebar a:hover {
+      background: #20b2ee;
+    }
+
+    .content {
+      margin-left: 10px;
+      padding: 20px;
+      text-align: center;
+      transition: margin-left 0.3s ease-in-out;
+    }
+
+    .statuscope-logo {
+      display: block;
+      margin: 10px auto;
+      max-width: 150px;
+    }
+
+    .statuscope-slogan {
+      font-size: 1.2rem;
+      font-style: italic;
+      color: white;
+    }
+
+    .btn-learn {
+      background-color: #66d7ee;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      text-decoration: none;
+    }
+
+    .btn-learn:hover {
+      background-color: #40c2dc;
+    }
+
+    .open .sidebar {
+      left: 0;
+    }
+
+    .open .sidebar a {
+      opacity: 1;
+    }
+
+    .open .content {
+      margin-left: 260px;
+    }
+
+    .welcome-patient {
+      font-weight: bold;
+      color: white;
+    }
+
+    .notification-wrapper {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+
+    .notification-bell {
+      background-color: #ffcd00;
+      color: black;
+      font-size: 24px;
+      padding: 10px 12px;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .notification-bell .count {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background-color: red;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 50%;
+      padding: 2px 6px;
+    }
+
+    .notification-dropdown {
+      position: absolute;
+      top: 55px;
+      right: 0;
+      background-color: white;
+      color: black;
+      width: 300px;
+      border-radius: 8px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+      display: none;
+      flex-direction: column;
+      padding: 10px;
+    }
+
+    .notification-dropdown.active {
+      display: flex;
+    }
+
+    .notification-item {
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .notification-item:last-child {
+      border-bottom: none;
+    }
+
+    .notification-actions {
+      text-align: right;
+      padding-top: 5px;
+    }
+
+    .notification-actions button {
+      background: none;
+      border: none;
+      color: #007bff;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    #chatbot-container {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 300px;
+      height: 400px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      display: none;
+      flex-direction: column;
+      z-index: 1000;
+    }
+
+    #chatbot-header {
+      background-color: #20b2ee;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      font-weight: bold;
+      border-radius: 10px 10px 0 0;
+    }
+
+    #chatbot-messages {
+      flex-grow: 1;
+      padding: 10px;
+      overflow-y: auto;
+    }
+
+    #chatbot-input-container {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+    }
+
+    #chatbot-input {
+      flex-grow: 1;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    #chatbot-send {
+      background-color: #20b2ee;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      margin-left: 5px;
+      cursor: pointer;
+    }
+
+    #chatbot-send:hover {
+      background-color: #66d7ee;
+    }
+
+    #chatbot-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #20b2ee;
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      z-index: 9999;
+    }
+
+    .chat-message {
+      color: black;
+      background-color: white;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      max-width: 80%;
+    }
+
+    .bot-message {
+      background-color: #f4f4f4;
+    }
+
+    .user-message {
+      background-color: #b3e0ff;
+      text-align: right;
+    }
+
+    .horizontal-cards {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+      margin-top: 40px;
+    }
+    .sidebar h2 {
+      color: white;
+      font-weight: bold;
+      text-align: center;
+      opacity: 1 !important; /* Ensure full visibility */
+    }
+
+    .horizontal-cards .card-box {
+      width: 250px;
+      padding: 20px;
+      border-radius: 20px;
+      background-color: white;
+      color: #333;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+/* Base hamburger styles */
+#hamburger-btn {
+  width: 30px;
+  height: 25px;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1100; /* On top of sidebar */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: left 0.3s ease;
+}
+
+/* Hamburger bars */
+#hamburger-btn .bar {
+  height: 4px;
+  width: 100%;
+  background-color: white;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Animate to X when sidebar is open */
+body.open #hamburger-btn {
+  left: 255px; /* Move next to the sidebar */
+}
+
+body.open #hamburger-btn .bar:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+body.open #hamburger-btn .bar:nth-child(2) {
+  opacity: 0;
+}
+
+body.open #hamburger-btn .bar:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
+    .card-1,
+    .card-2,
+    .card-3 {
+      background-color: white;
+    }
+
+    .card-box a {
+      margin-top: 10px;
+      display: inline-block;
+      color: #007bff;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+
+    .skew-left { transform: skewY(-3deg); }
+    .skew-straight { transform: skewY(0deg); }
+    .skew-right { transform: skewY(3deg); }
+  </style>
+</head>
+<body>
+  <div class="sidebar-hover-area" onmouseover="showSidebar()"></div>
+<div id="hamburger-btn" onclick="toggleSidebar()">
+  <span class="bar"></span>
+  <span class="bar"></span>
+  <span class="bar"></span>
+</div>
+    <div class="sidebar" id="sidebar">
+  <h1 class="sidebar-title">StatusCope</h1>
+  <a href="#">Home</a>
+  <a href="reports.html">Reports</a>
+  <a href="submit_ticket.html">Ticket</a>
+  <a href="account_settings.html">Account Settings</a>
+  <a href="about.html">About Us</a>
+  <a href="#" onclick="logout()">Logout</a>
+</div>
+
+  <div class="content" id="content">
+    <img src="STATUSCOPELOGO.png" alt="StatusCope Logo" class="statuscope-logo">
+    <p class="statuscope-slogan">Your Heart's Health is all in your Hands</p>
+    <h1 class="welcome-patient">Welcome, Patient!</h1>
+    <p>You have successfully logged in.</p>
+    <a href="learnmore.html" class="btn btn-learn mt-3">Learn More</a>
+
+    <div class="horizontal-cards">
+      <div class="card-box card-1 skew-left">
+        <h4>More About StatusCope</h4>
+        <p>StatusCope is a smart stethoscope  design for self-monitoring heart health. The device upgrades conventional heart auscultation through the use of a piezo sensor to detect heart beats and present them onto an OLED display. The device records a phonocardiogram (PCG) and monitors beats per minute (BPM), enabling users to view their heart health in real-time. It transmits the captured data over Wi-Fi to a telemedicine cloud platform, allowing remote monitoring by physicians. This makes it possible for physicians to review the data remotely and provide early interventions if necessary. The device also protects against unauthorized data access, providing a dependable solution for patients and physicians to monitor heart health effectively.</p>
+      </div>
+      <div class="card-box card-2 skew-straight">
+        <h4>Heart Auscultation</h4>
+        <p>Heart auscultation is the use of a stethoscope to hear the sounds of the heart in order to identify any abnormalities or irregularities in the heartbeat. This technique assists physicians to screen for conditions like heart murmurs, irregular heart rhythms, or valve diseases. Through listening to heartbeats, medical professionals are able to evaluate the performance of the heart. It is a basic technique applied during physical examinations to know the condition of the cardiovascular system.</p>
+      </div>
+      <div class="card-box card-3 skew-right">
+        <h4>Why Telemedicine?</h4>
+        <p>Telemedicine has the potential to enhance healthcare access and address challenges related to technology accessibility and its integration into routine healthcare. It offers health services to people who have limited access to hospitals and live in remote areas. Consultations, diagnosis and monitoring to patients are all possible through telemedicine platforms. This provides convenience and saves time for patients in remote areas and service providers. Telemedicine continues to evolve, integrating new technologies and expanding its applications.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="notification-wrapper">
+    <div class="notification-bell" onclick="toggleNotifications()">
+      🔔<span class="count" id="notification-count">3</span>
+    </div>
+    <div class="notification-dropdown" id="notification-dropdown">
+      <div id="notification-list"></div>
+      <div class="notification-actions">
+        <button onclick="markAllAsRead()">Mark all as read</button>
+      </div>
+    </div>
+  </div>
+
+  <button id="chatbot-btn" onclick="toggleChatbot()">💬</button>
+  <div id="chatbot-container">
+    <div id="chatbot-header">Chatbot</div>
+    <div id="chatbot-messages"></div>
+    <div id="chatbot-input-container">
+      <input type="text" id="chatbot-input" placeholder="Type your message..." />
+      <button id="chatbot-send" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    let unreadCount = 3;
+    const notifications = [
+      "Heart rate check reminder.",
+      "New report is available.",
+      "Don't forget your daily log!"
+    ];
+
+    function showSidebar() {
+      document.body.classList.add('open');
+    }
+
+    function hideSidebar() {
+      document.body.classList.remove('open');
+    }
+
+    function logout() {
+      window.location.href = "index.html";
+    }
+
+    function toggleChatbot() {
+      const container = document.getElementById('chatbot-container');
+      container.style.display = container.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('chatbot-input');
+      const msg = input.value.trim();
+      const chatbox = document.getElementById('chatbot-messages');
+      if (msg !== "") {
+        chatbox.innerHTML += `<div class="chat-message user-message">You: ${msg}</div>`;
+        chatbox.innerHTML += `<div class="chat-message bot-message">Bot: I'm not sure how to answer that right now.</div>`;
+        input.value = '';
+        chatbox.scrollTop = chatbox.scrollHeight;
+      }
+    }
+
+    function toggleNotifications() {
+      document.getElementById("notification-dropdown").classList.toggle("active");
+    }
+
+    function renderNotifications() {
+      const list = document.getElementById("notification-list");
+      list.innerHTML = "";
+      notifications.forEach((notif) => {
+        list.innerHTML += `<div class="notification-item">${notif}</div>`;
+      });
+    }
+
+    function markAllAsRead() {
+      unreadCount = 0;
+      document.getElementById("notification-count").style.display = "none";
+      document.getElementById("notification-dropdown").classList.remove("active");
+    }
+
+    function mockRealTimeNotification() {
+      setTimeout(() => {
+        notifications.push("New system update available!");
+        unreadCount++;
+        document.getElementById("notification-count").innerText = unreadCount;
+        document.getElementById("notification-count").style.display = "inline-block";
+        renderNotifications();
+      }, 8000);
+    }
+
+  function toggleSidebar() {
+    document.body.classList.toggle('open');
+  }
+
+    window.onload = function () {
+      renderNotifications();
+      mockRealTimeNotification();
+    }
+  </script>
+</body>
+</html>
