@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Doctor Messaging</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .chat-bubble {
+      border-radius: 9999px;
+      background-color: #3ee0eb;
+      padding: 10px 20px;
+      max-width: 60%;
+      word-break: break-word;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <div class="w-72 bg-white shadow-md p-4 flex flex-col">
+      <!-- Sidebar content (unchanged) -->
+    </div>
+
+    <!-- Chat Area -->
+    <div class="flex-1 flex flex-col">
+      <!-- Header -->
+      <div class="p-4 bg-white border-b">
+        <h3 class="text-xl font-semibold">Fyang Smith</h3>
+        <p class="text-sm text-gray-500">Offline</p>
+      </div>
+
+      <!-- Messages -->
+      <div id="messages" class="flex-1 p-4 overflow-y-auto">
+        <!-- Messages will appear here -->
+      </div>
+
+      <!-- Message Input -->
+      <div class="p-4 bg-white flex items-center space-x-3 border-t">
+        <input id="input" type="text" placeholder="Type a message.." class="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400">
+        <button id="sendBtn">
+          <svg class="w-6 h-6 text-cyan-500" fill="currentColor" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Socket.IO Client -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const input = document.getElementById('input');
+    const messages = document.getElementById('messages');
+    const sendBtn = document.getElementById('sendBtn');
+
+    function appendMessage(msg, align = 'end') {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `flex justify-${align}`;
+      msgDiv.innerHTML = `<div class="chat-bubble">${msg}</div>`;
+      messages.appendChild(msgDiv);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    sendBtn.addEventListener('click', () => {
+      if (input.value.trim() !== '') {
+        socket.emit('chat message', input.value);
+        appendMessage(input.value, 'end');
+        input.value = '';
+      }
+    });
+
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        sendBtn.click();
+      }
+    });
+
+    socket.on('chat message', (msg) => {
+      appendMessage(msg, 'start');
+    });
+  </script>
+
+</body>
+</html>

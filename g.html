@@ -1,0 +1,107 @@
+    margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #f0f0f0;
+      transition: margin-left 0.3s ease-in-out;
+    }
+
+#hamburger-btn {
+  width: 30px;
+  height: 25px;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1100; /* On top of sidebar */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: left 0.3s ease;
+}
+
+/* Hamburger bars */
+#hamburger-btn .bar {
+  height: 4px;
+  width: 100%;
+  background-color: white;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Animate to X when sidebar is open */
+body.open #hamburger-btn {
+  left: 255px; /* Move next to the sidebar */
+}
+
+body.open #hamburger-btn .bar:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+body.open #hamburger-btn .bar:nth-child(2) {
+  opacity: 0;
+}
+
+body.open #hamburger-btn .bar:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  position: fixed;
+  left: -250px; /* hidden initially */
+  top: 0;
+  background: #008cba;
+  padding-top: 20px;
+  color: white;
+  transition: left 0.3s ease-in-out;
+  z-index: 1000;
+  overflow-y: auto; /* ✅ Add this */
+}
+
+.sidebar h1 {
+  font-size: 30px;     /* Adjust size to be smaller */
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+  margin-top: 0;
+  color: white;
+}
+
+    .sidebar a {
+      display: block;
+      color: white;
+      padding: 10px;
+      text-decoration: none;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .content {
+      margin-left: 10px;
+      padding: 20px;
+      text-align: center;
+      transition: margin-left 0.3s ease-in-out;
+    }
+        .sidebar h2 {
+      color: white;
+      font-weight: bold;
+      text-align: center;
+      opacity: 1 !important; /* Ensure full visibility */
+    }
+
+    .sidebar a:hover {
+      background-color: #20b2ee;
+    }
+
+    .open .sidebar {
+      left: 0;
+    }
+
+    .open .main-content {
+      margin-left: 250px;
+    }
+
+    .main-content {
+      padding: 20px;
+      transition: margin-left 0.3s ease-in-out;
+    }

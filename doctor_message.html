@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StatusCope - Doctor Messaging</title>
+  <style>
+    .sidebar {
+      width: 250px;
+      height: 100vh;
+      position: fixed;
+      left: -250px;
+      top: 0;
+      background: #008cba;
+      padding-top: 20px;
+      color: white;
+      transition: left 0.3s ease-in-out;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    .sidebar h1 {
+      font-size: 30px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+      margin-top: 0;
+      color: white;
+    }
+
+    .sidebar a {
+      display: block;
+      color: white;
+      padding: 10px;
+      text-decoration: none;
+      text-align: center;
+      margin-top: 15px;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    .sidebar a:hover {
+      background: #20b2ee;
+    }
+
+    .content {
+      margin-left: 10px;
+      padding: 20px;
+      text-align: center;
+      transition: margin-left 0.3s ease-in-out;
+    }
+
+    #hamburger-btn {
+      width: 30px;
+      height: 25px;
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1100;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: left 0.3s ease;
+    }
+
+    #hamburger-btn .bar {
+      height: 4px;
+      width: 100%;
+      background-color: #333;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+
+    body.open #hamburger-btn {
+      left: 255px;
+    }
+
+    body.open #hamburger-btn .bar:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    body.open #hamburger-btn .bar:nth-child(2) {
+      opacity: 0;
+    }
+
+    body.open #hamburger-btn .bar:nth-child(3) {
+      transform: rotate(-45deg) translate(5px, -5px);
+    }
+
+    .chat-container {
+      display: flex;
+      height: 100vh;
+    }
+
+    .contact-list {
+      width: 250px;
+      background-color: #f1f1f1;
+      overflow-y: auto;
+    }
+
+    .contact-item {
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .contact-item:hover {
+      background-color: #ddd;
+    }
+
+    .chat-window {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+    }
+
+    .message-input {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ccc;
+    }
+
+    .message-input input {
+      flex: 1;
+      padding: 10px;
+    }
+
+    .message-input button {
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar-hover-area" onmouseover="showSidebar()"></div>
+  <div id="hamburger-btn" onclick="toggleSidebar()">
+    <span class="bar"></span>
+    <span class="bar"></span>
+    <span class="bar"></span>
+  </div>
+
+  <div class="sidebar" id="sidebar">
+    <h1 class="sidebar-title">StatusCope</h1>
+    <a href="doctor_dash.html">Home</a>
+    <a href="doctor_reports.html">Reports</a>
+    <a href="doctor_message.html">Message</a>
+    <a href="account_settings.html">Account Settings</a>
+    <a href="about.html">About Us</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+
+  <div class="chat-container">
+    <div class="contact-list" id="contactList">
+      <!-- Patients will be listed here -->
+    </div>
+    <div class="chat-window">
+      <div class="messages" id="messages">
+        <!-- Chat messages -->
+      </div>
+      <div class="message-input">
+        <input type="text" id="messageInput" placeholder="Type your message..." />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-adYSJq5Klknat97ISKmr0ZlAHZ2alqY",
+      authDomain: "statuscop-web.firebaseapp.com",
+      projectId: "statuscop-web",
+      storageBucket: "statuscop-web.appspot.com",
+      messagingSenderId: "920281500094",
+      appId: "1:920281500094:web:9ea6b40515e742916d11ef",
+      measurementId: "G-HYXG250TDX"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser;
+    let selectedPatientId;
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        loadPatients();
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+
+    function loadPatients() {
+      const contactList = document.getElementById("contactList");
+      contactList.innerHTML = "<p style='padding: 10px;'>Loading patients...</p>";
+
+      db.collection("users").where("role", "==", "patient").get()
+        .then(snapshot => {
+          contactList.innerHTML = "";
+          if (snapshot.empty) {
+            contactList.innerHTML = "<p style='padding: 10px;'>No patients found.</p>";
+            return;
+          }
+
+          snapshot.forEach(doc => {
+            const patient = doc.data();
+            const div = document.createElement("div");
+            div.classList.add("contact-item");
+            div.textContent = patient.name || "Unnamed Patient";
+            div.onclick = () => selectPatient(doc.id, patient.name);
+            contactList.appendChild(div);
+          });
+        })
+        .catch(error => {
+          console.error("Error loading patients:", error);
+          contactList.innerHTML = "<p style='padding: 10px;'>Error loading patients.</p>";
+        });
+    }
+
+    function selectPatient(patientId, patientName) {
+      selectedPatientId = patientId;
+      document.getElementById("messages").innerHTML = "";
+      const chatId = generateChatId(currentUser.uid, patientId);
+
+      db.collection("chats").doc(chatId).collection("messages")
+        .orderBy("timestamp").onSnapshot(snapshot => {
+          const messagesDiv = document.getElementById("messages");
+          messagesDiv.innerHTML = "";
+          snapshot.forEach(doc => {
+            const message = doc.data();
+            const div = document.createElement("div");
+            div.textContent = `${message.senderName}: ${message.text}`;
+            messagesDiv.appendChild(div);
+          });
+        });
+    }
+
+    function sendMessage() {
+      const text = document.getElementById("messageInput").value;
+      if (text.trim() === "" || !selectedPatientId) return;
+
+      const chatId = generateChatId(currentUser.uid, selectedPatientId);
+      db.collection("chats").doc(chatId).collection("messages").add({
+        text: text,
+        senderId: currentUser.uid,
+        senderName: "Doctor",
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      document.getElementById("messageInput").value = "";
+    }
+
+    function generateChatId(uid1, uid2) {
+      return uid1 < uid2 ? uid1 + "_" + uid2 : uid2 + "_" + uid1;
+    }
+
+    function toggleSidebar() {
+      document.body.classList.toggle('open');
+    }
+
+    function showSidebar() {
+      document.body.classList.add('open');
+    }
+
+    function logout() {
+      auth.signOut().then(() => {
+        window.location.href = "index.html";
+      });
+    }
+  </script>
+</body>
+</html>
